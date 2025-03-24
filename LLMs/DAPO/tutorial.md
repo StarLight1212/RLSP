@@ -36,15 +36,17 @@ DAPO（Decoupled Clip and Dynamic sAmpling Policy Optimization）是一种开源
 #### 技术细节
 根据论文提供的公式，Token-level Policy Gradient Loss的目标函数为：
 
-\[ J_{DAPO}(\theta) = \mathbb{E}_{(q,a) \sim D, \{o_i\} \sim \pi_{\theta_{old}}(\cdot|q)} \left[ \frac{1}{G} \sum_{i=1}^G \frac{1}{|o_i|} \sum_{t=1}^{|o_i|} \min\left(r(\theta)_{i,t} \cdot \hat{A}_{i}, \text{clip}(r(\theta)_{i,t}, 1 - \epsilon_{\text{low}}, 1 + \epsilon_{\text{high}}) \cdot \hat{A}_{i}\right) \right] \]
+\[
+J_{DAPO}(\theta) = \mathbb{E}_{(q,a) \sim D, \{o_i\} \sim \pi_{\theta_{old}}(\cdot|q)} \left[ \frac{1}{G} \sum_{i=1}^G \frac{1}{|o_i|} \sum_{t=1}^{|o_i|} \min\left(r(\theta)_{i,t} \cdot \hat{A}_{i}, \text{clip}(r(\theta)_{i,t}, 1 - \epsilon_{\text{low}}, 1 + \epsilon_{\text{high}}) \cdot \hat{A}_{i}\right) \right]
+\]
 
 其中：
 - \( q \) 是问题，\( a \) 是参考答案，\( D \) 是数据集。
-- \( \{o_i\} \) 是使用旧策略 \( \pi_{\theta_{old}} \) 为每个问题生成的一组G个响应。
-- \( r(\theta)_{i,t} = \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} | q, o_{i,<t})} \) 是token \( t \) 在响应 \( o_i \) 中的重要性比率，新策略相对于旧策略的概率比率。
+- \( \{o_i\} \) 是使用旧策略 \( \pi_{\theta_{old}} \) 为每个问题生成的一组 \( G \) 个响应。
+- \( r(\theta)_{i,t} = \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} | q, o_{i,<t})} \) 是 token \( t \) 在响应 \( o_i \) 中的重要性比率，表示新策略相对于旧策略的概率比率。
 - \( \hat{A}_{i} \) 是响应 \( i \) 的优势值，计算为 \( (R_i - \text{mean}(\{R_i\}_{i=1}^G)) / \text{std}(\{R_i\}_{i=1}^G) \)，其中 \( R_i \) 是响应 \( o_i \) 的奖励。
-- \( \epsilon_{\text{low}} \) 和 \( \epsilon_{\text{high}} \) 是剪切范围参数，用于稳定训练，类似于PPO中的剪切机制。
-- 公式中还有一个约束条件：\( 0 < |\{o_i | \text{is_equivalent}(a, o_i)\}| < G \)，可能表示生成的响应中与参考答案等价的响应数量应在0到G之间（不包括0和G），但具体实现细节未明确。
+- \( \epsilon_{\text{low}} \) 和 \( \epsilon_{\text{high}} \) 是剪切范围参数，用于稳定训练，类似于 PPO 中的剪切机制。
+- 公式中还有一个约束条件：\( 0 < |\{o_i | \text{is_equivalent}(a, o_i)\}| < G \)，可能表示生成的响应中与参考答案等价的响应数量应在 \( 0 \) 到 \( G \) 之间（不包括 \( 0 \) 和 \( G \)），但具体实现细节未明确。
 
 #### 伪代码实现
 以下是基于上述公式的伪代码实现，旨在捕捉Token-level Policy Gradient Loss的核心逻辑：
