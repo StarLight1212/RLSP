@@ -48,6 +48,7 @@ J_{DAPO}(\theta) = \mathbb{E}_{(q,a) \sim D, \{o_i\} \sim \pi_{\theta_{old}}(\cd
 - \( \epsilon_{\text{low}} \) 和 \( \epsilon_{\text{high}} \) 是剪切范围参数，用于稳定训练，类似于 PPO 中的剪切机制。
 - 公式中还有一个约束条件：\( 0 < |\{o_i | \text{is_equivalent}(a, o_i)\}| < G \)，可能表示生成的响应中与参考答案等价的响应数量应在 \( 0 \) 到 \( G \) 之间（不包括 \( 0 \) 和 \( G \)），但具体实现细节未明确。
 
+
 #### 伪代码实现
 以下是基于上述公式的伪代码实现，旨在捕捉Token-level Policy Gradient Loss的核心逻辑：
 
